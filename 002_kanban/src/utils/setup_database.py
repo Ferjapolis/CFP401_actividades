@@ -1,5 +1,7 @@
 # =============================================================================
-# setup_database.py - Script de Configuración de BD (ARCHIVO COMPLETO)
+#  Script de Configuración de BD (ARCHIVO COMPLETO)
+#  Este script crea la base de datos y la tabla de tareas si no existen.
+#  Se ejecuta una vez para configurar el proyecto.
 # =============================================================================
 
 import sqlite3

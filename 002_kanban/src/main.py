@@ -1,5 +1,14 @@
 # =============================================================================
-# main.py - Programa Principal (ESTUDIANTES DEBEN COMPLETAR)
+#  Programa Principal
+#  Este módulo contiene la lógica principal de la aplicación Kanban.
+#  Permite inicializar la aplicación, gestionar tareas y mostrar el tablero.
+#  Funciones:
+#    - inicializar_aplicacion: Crea la tabla de tareas si no existe.
+#    - ver_tablero: Muestra todas las tareas organizadas por estado.
+#    - crear_nueva_tarea: Permite al usuario crear una nueva tarea.
+#    - mover_tarea: Permite mover una tarea a otro estado.
+#    - eliminar_tarea: Permite eliminar una tarea existente.
+#    - buscar_tareas: Permite buscar tareas por un término específico.
 # =============================================================================
 
 # Importar módulos necesarios

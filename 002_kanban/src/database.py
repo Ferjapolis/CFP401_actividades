@@ -1,5 +1,7 @@
 # =============================================================================
-# database.py - Funciones de Base de Datos (ESTUDIANTES DEBEN COMPLETAR)
+# Funciones de Base de Datos
+# Este módulo contiene las funciones para interactuar con la base de datos SQLite.
+# Permite crear tareas, obtenerlas, actualizarlas y eliminarlas.
 # =============================================================================
 
 import sqlite3

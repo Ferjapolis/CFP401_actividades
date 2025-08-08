@@ -1,5 +1,7 @@
 # =============================================================================
-# config.py - Configuraciones del Proyecto (ARCHIVO COMPLETO - NO MODIFICAR)
+# Configuraciones del Proyecto (ARCHIVO COMPLETO - NO MODIFICAR)
+# Este archivo contiene las configuraciones globales del sistema Kanban.
+# Incluye la ruta de la base de datos, estados válidos y mensajes del sistema.
 # =============================================================================
 
 import os

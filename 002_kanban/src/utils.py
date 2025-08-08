@@ -1,5 +1,8 @@
 # =============================================================================
-# utils.py - Funciones Auxiliares (ESTUDIANTES DEBEN COMPLETAR)
+# Funciones Auxiliares 
+# Este módulo contiene funciones auxiliares para la aplicación Kanban.
+# Permite mostrar menús, validar entradas y formatear tareas.
+# Estas funciones son utilizadas por el módulo principal y otros módulos.
 # =============================================================================
 
 import os
