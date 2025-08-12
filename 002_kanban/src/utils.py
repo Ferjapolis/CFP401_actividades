@@ -11,19 +11,19 @@ from config import ESTADOS_VALIDOS, SEPARADOR, SEPARADOR_COLUMNA, MENSAJES
 def mostrar_menu_principal():
     """
     Muestra el menú principal de opciones del sistema.
-    No recibe parámetros ni retorna valores.
-    
-    Debe mostrar:
-    1. Ver Tablero
-    2. Crear Nueva Tarea
-    3. Mover Tarea
-    4. Eliminar Tarea
-    5. Buscar Tareas
-    6. Salir
     """
-    # TODO: Implementar menú con formato atractivo
-    # Usar las constantes de config.py para el formato
-    pass
+    print(f"\n{SEPARADOR}")
+    print(f"  {MENSAJES['bienvenida']}")
+    print(SEPARADOR)
+    print("📋 MENÚ PRINCIPAL")
+    print("-" * 20)
+    print("1. 👁️  Ver Tablero")
+    print("2. ➕ Crear Nueva Tarea")
+    print("3. 🔄 Mover Tarea")
+    print("4. 🗑️  Eliminar Tarea")
+    print("5. 🔍 Buscar Tareas")
+    print("6. 🚪 Salir")
+    print(SEPARADOR)
 
 def validar_titulo(titulo):
     """
@@ -34,13 +34,8 @@ def validar_titulo(titulo):
     
     Returns:
         bool: True si el título es válido, False en caso contrario
-        
-    Ejemplo:
-        if validar_titulo("Mi tarea"):
-            print("Título válido")
     """
-    # TODO: Verificar que el título no esté vacío y no contenga solo espacios
-    pass
+    return titulo and titulo.strip()
 
 def validar_estado(estado):
     """
@@ -51,35 +46,34 @@ def validar_estado(estado):
     
     Returns:
         bool: True si el estado es válido, False en caso contrario
-        
-    Ejemplo:
-        if validar_estado("En Progreso"):
-            print("Estado válido")
     """
-    # TODO: Verificar que el estado esté en ESTADOS_VALIDOS
-    pass
+    return estado in ESTADOS_VALIDOS
 
 def formatear_tarea(tarea):
     """
     Formatea una tarea para mostrar en pantalla de manera legible.
     
     Args:
-        tarea (tuple): Tupla con datos de la tarea 
-                      (id, titulo, descripcion, estado, fecha_creacion, fecha_actualizacion)
+        tarea (tuple): Tupla con datos de la tarea
     
     Returns:
         str: Cadena formateada con los datos de la tarea
-        
-    Ejemplo:
-        tarea_formateada = formatear_tarea((1, "Mi tarea", "Descripción", "Por Hacer", ...))
     """
-    # TODO: Crear formato legible para mostrar una tarea
-    # Incluir ID, título, descripción (truncada si es muy larga), estado
-    # Ejemplo de formato:
-    # [1] Mi tarea
-    #     Descripción: Esta es la descripción...
-    #     Estado: Por Hacer
-    pass
+    id_tarea, titulo, descripcion, estado, fecha_creacion, fecha_actualizacion = tarea
+    
+    # Truncar descripción si es muy larga
+    desc_mostrar = descripcion if descripcion else "Sin descripción"
+    if len(desc_mostrar) > 40:
+        desc_mostrar = desc_mostrar[:37] + "..."
+    
+    # Formatear fecha
+    fecha_str = fecha_creacion.split()[0] if fecha_creacion else "N/A"
+    
+    resultado = f"[{id_tarea}] {titulo}\n"
+    resultado += f"    📝 {desc_mostrar}\n"
+    resultado += f"    📅 {fecha_str}"
+    
+    return resultado
 
 def mostrar_tablero(tareas):
     """
@@ -87,18 +81,57 @@ def mostrar_tablero(tareas):
     
     Args:
         tareas (list): Lista de tuplas con todas las tareas
-        
-    No retorna valores, solo imprime en pantalla.
-    
-    Ejemplo de formato:
-    Por Hacer     | En Progreso   | Completado
-    --------------|---------------|---------------
-    [1] Tarea 1   | [2] Tarea 2   | [3] Tarea 3
-    [4] Tarea 4   |               |
     """
-    # TODO: Organizar tareas por estado y mostrar en columnas
-    # Usar las funciones de formateo para hacer más legible
-    pass
+    if not tareas:
+        print(f"\n{MENSAJES['no_tareas']}")
+        return
+    
+    # Organizar tareas por estado
+    por_hacer = [t for t in tareas if t[3] == "Por Hacer"]
+    en_progreso = [t for t in tareas if t[3] == "En Progreso"]
+    completado = [t for t in tareas if t[3] == "Completado"]
+    
+    print(f"\n{SEPARADOR}")
+    print("📋 TABLERO KANBAN")
+    print(SEPARADOR)
+    
+    # Encabezados de columnas
+    print(f"{'📝 POR HACER':<20} | {'🔄 EN PROGRESO':<20} | {'✅ COMPLETADO':<20}")
+    print(f"{SEPARADOR_COLUMNA} | {SEPARADOR_COLUMNA} | {SEPARADOR_COLUMNA}")
+    
+    # Encontrar el máximo número de tareas en cualquier columna
+    max_tareas = max(len(por_hacer), len(en_progreso), len(completado), 1)
+    
+    # Mostrar tareas línea por línea
+    for i in range(max_tareas):
+        # Por Hacer
+        if i < len(por_hacer):
+            tarea = por_hacer[i]
+            titulo_corto = tarea[1][:15] + "..." if len(tarea[1]) > 15 else tarea[1]
+            celda_por_hacer = f"[{tarea[0]}] {titulo_corto}"
+        else:
+            celda_por_hacer = ""
+        
+        # En Progreso
+        if i < len(en_progreso):
+            tarea = en_progreso[i]
+            titulo_corto = tarea[1][:15] + "..." if len(tarea[1]) > 15 else tarea[1]
+            celda_en_progreso = f"[{tarea[0]}] {titulo_corto}"
+        else:
+            celda_en_progreso = ""
+        
+        # Completado
+        if i < len(completado):
+            tarea = completado[i]
+            titulo_corto = tarea[1][:15] + "..." if len(tarea[1]) > 15 else tarea[1]
+            celda_completado = f"[{tarea[0]}] {titulo_corto}"
+        else:
+            celda_completado = ""
+        
+        print(f"{celda_por_hacer:<20} | {celda_en_progreso:<20} | {celda_completado:<20}")
+    
+    print(f"\n📊 Total: {len(tareas)} tareas")
+    print(f"📝 Por Hacer: {len(por_hacer)} | 🔄 En Progreso: {len(en_progreso)} | ✅ Completado: {len(completado)}")
 
 def obtener_entrada_usuario(mensaje):
     """
@@ -110,13 +143,12 @@ def obtener_entrada_usuario(mensaje):
     
     Returns:
         str: Entrada del usuario (garantizado no vacío)
-        
-    Ejemplo:
-        titulo = obtener_entrada_usuario("Ingrese el título: ")
     """
-    # TODO: Solicitar entrada y validar que no esté vacía
-    # Repetir hasta obtener una entrada válida
-    pass
+    while True:
+        entrada = input(mensaje).strip()
+        if entrada:
+            return entrada
+        print("❌ La entrada no puede estar vacía. Intente nuevamente.")
 
 def confirmar_accion(mensaje):
     """
@@ -127,22 +159,61 @@ def confirmar_accion(mensaje):
     
     Returns:
         bool: True si el usuario confirma (s/S), False en caso contrario
-        
-    Ejemplo:
-        if confirmar_accion("¿Está seguro de eliminar la tarea?"):
-            # proceder con eliminación
     """
-    # TODO: Solicitar confirmación s/n y retornar booleano
-    pass
+    while True:
+        respuesta = input(f"{mensaje} (s/n): ").strip().lower()
+        if respuesta in ['s', 'si', 'sí', 'y', 'yes']:
+            return True
+        elif respuesta in ['n', 'no']:
+            return False
+        print("❌ Responda con 's' para sí o 'n' para no.")
 
 def limpiar_pantalla():
     """
     Limpia la pantalla de la consola.
     Funciona en Windows, Linux y Mac.
-    
-    No recibe parámetros ni retorna valores.
     """
-    # TODO: Limpiar pantalla usando os.system
-    # En Windows: "cls", en Linux/Mac: "clear"
-    # Pista: usar os.name para detectar el sistema operativo
-    pass
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def mostrar_lista_tareas(tareas, titulo="LISTA DE TAREAS"):
+    """
+    Muestra una lista numerada de tareas.
+    
+    Args:
+        tareas (list): Lista de tareas
+        titulo (str): Título a mostrar
+    """
+    if not tareas:
+        print(f"\n{MENSAJES['no_tareas']}")
+        return
+    
+    print(f"\n📋 {titulo}")
+    print("-" * 40)
+    for tarea in tareas:
+        print(formatear_tarea(tarea))
+        print("-" * 40)
+
+def obtener_numero_valido(mensaje, min_val=1, max_val=None):
+    """
+    Solicita un número válido al usuario.
+    
+    Args:
+        mensaje (str): Mensaje a mostrar
+        min_val (int): Valor mínimo aceptado
+        max_val (int): Valor máximo aceptado (opcional)
+    
+    Returns:
+        int: Número válido ingresado por el usuario
+    """
+    while True:
+        try:
+            numero = int(input(mensaje))
+            if numero < min_val:
+                print(f"❌ El número debe ser mayor o igual a {min_val}")
+                continue
+            if max_val and numero > max_val:
+                print(f"❌ El número debe ser menor o igual a {max_val}")
+                continue
+            return numero
+        except ValueError:
+            print("❌ Debe ingresar un número válido.")

@@ -6,7 +6,7 @@
 
 import sqlite3
 from datetime import datetime
-from config import DATABASE_PATH, ESTADOS_VALIDOS
+from config import DATABASE_PATH, ESTADOS_VALIDOS, MENSAJES
 
 def conectar_bd():
     """
@@ -14,31 +14,44 @@ def conectar_bd():
     
     Returns:
         sqlite3.Connection: Objeto de conexión a la BD o None si hay error
-        
-    Ejemplo de uso:
-        conexion = conectar_bd()
-        if conexion:
-            # usar la conexión
-            cerrar_conexion(conexion)
     """
-    # TODO: Implementar conexión a SQLite
-    # Pista: usar sqlite3.connect(DATABASE_PATH)
-    # Recuerda manejar posibles errores con try/except
-    pass
+    try:
+        conexion = sqlite3.connect(DATABASE_PATH)
+        return conexion
+    except sqlite3.Error as e:
+        print(f"{MENSAJES['error_bd']}{e}")
+        return None
 
 def crear_tabla_tareas():
     """
     Crea la tabla de tareas si no existe.
-    Esta función ya está implementada en setup_database.py,
-    pero puedes implementarla aquí también para práctica.
     
     Returns:
         bool: True si se creó exitosamente, False en caso contrario
     """
-    # TODO: Implementar creación de tabla
-    # La tabla debe tener los campos: id, titulo, descripcion, estado, 
-    # fecha_creacion, fecha_actualizacion
-    pass
+    conexion = conectar_bd()
+    if not conexion:
+        return False
+    
+    try:
+        cursor = conexion.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS tareas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                titulo TEXT NOT NULL,
+                descripcion TEXT,
+                estado TEXT NOT NULL DEFAULT 'Por Hacer',
+                fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+                fecha_actualizacion DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        conexion.commit()
+        return True
+    except sqlite3.Error as e:
+        print(f"{MENSAJES['error_bd']}{e}")
+        return False
+    finally:
+        cerrar_conexion(conexion)
 
 def crear_tarea(titulo, descripcion=""):
     """
@@ -50,50 +63,79 @@ def crear_tarea(titulo, descripcion=""):
     
     Returns:
         int: ID de la tarea creada o None si hay error
-        
-    Ejemplo:
-        id_tarea = crear_tarea("Mi tarea", "Descripción detallada")
     """
-    # TODO: Implementar inserción de tarea
-    # La tarea debe crearse con estado "Por Hacer" por defecto
-    # Recuerda cerrar la conexión después de usar
-    pass
+    conexion = conectar_bd()
+    if not conexion:
+        return None
+    
+    try:
+        cursor = conexion.cursor()
+        cursor.execute(
+            "INSERT INTO tareas (titulo, descripcion, estado) VALUES (?, ?, 'Por Hacer')",
+            (titulo, descripcion)
+        )
+        conexion.commit()
+        return cursor.lastrowid
+    except sqlite3.Error as e:
+        print(f"{MENSAJES['error_bd']}{e}")
+        return None
+    finally:
+        cerrar_conexion(conexion)
 
 def obtener_todas_tareas():
     """
     Obtiene todas las tareas de la base de datos.
     
     Returns:
-        list: Lista de tuplas con los datos de las tareas
-              [(id, titulo, descripcion, estado, fecha_creacion, fecha_actualizacion), ...]
-              o lista vacía si no hay tareas
-              
-    Ejemplo:
-        tareas = obtener_todas_tareas()
-        for tarea in tareas:
-            print(f"ID: {tarea[0]}, Título: {tarea[1]}")
+        list: Lista de tuplas con los datos de las tareas o lista vacía
     """
-    # TODO: Implementar consulta SELECT para obtener todas las tareas
-    # Ordenar por fecha_creacion descendente (más nuevas primero)
-    pass
+    conexion = conectar_bd()
+    if not conexion:
+        return []
+    
+    try:
+        cursor = conexion.cursor()
+        cursor.execute(
+            "SELECT id, titulo, descripcion, estado, fecha_creacion, fecha_actualizacion "
+            "FROM tareas ORDER BY fecha_creacion DESC"
+        )
+        return cursor.fetchall()
+    except sqlite3.Error as e:
+        print(f"{MENSAJES['error_bd']}{e}")
+        return []
+    finally:
+        cerrar_conexion(conexion)
 
 def obtener_tareas_por_estado(estado):
     """
     Obtiene todas las tareas de un estado específico.
     
     Args:
-        estado (str): Estado a filtrar ("Por Hacer", "En Progreso", "Completado")
+        estado (str): Estado a filtrar
     
     Returns:
         list: Lista de tuplas con las tareas del estado solicitado
-              o lista vacía si no hay tareas en ese estado
-              
-    Ejemplo:
-        tareas_pendientes = obtener_tareas_por_estado("Por Hacer")
     """
-    # TODO: Implementar consulta SELECT con WHERE para filtrar por estado
-    # Validar que el estado sea válido antes de consultar
-    pass
+    if estado not in ESTADOS_VALIDOS:
+        return []
+    
+    conexion = conectar_bd()
+    if not conexion:
+        return []
+    
+    try:
+        cursor = conexion.cursor()
+        cursor.execute(
+            "SELECT id, titulo, descripcion, estado, fecha_creacion, fecha_actualizacion "
+            "FROM tareas WHERE estado = ? ORDER BY fecha_creacion DESC",
+            (estado,)
+        )
+        return cursor.fetchall()
+    except sqlite3.Error as e:
+        print(f"{MENSAJES['error_bd']}{e}")
+        return []
+    finally:
+        cerrar_conexion(conexion)
 
 def actualizar_estado_tarea(id_tarea, nuevo_estado):
     """
@@ -105,15 +147,33 @@ def actualizar_estado_tarea(id_tarea, nuevo_estado):
     
     Returns:
         bool: True si se actualizó correctamente, False en caso contrario
-        
-    Ejemplo:
-        exito = actualizar_estado_tarea(1, "En Progreso")
     """
-    # TODO: Implementar UPDATE para cambiar el estado de la tarea
-    # También actualizar fecha_actualizacion con la fecha actual
-    # Validar que el nuevo_estado sea válido
-    # Verificar que la tarea existe antes de actualizar
-    pass
+    if nuevo_estado not in ESTADOS_VALIDOS:
+        return False
+    
+    conexion = conectar_bd()
+    if not conexion:
+        return False
+    
+    try:
+        cursor = conexion.cursor()
+        # Verificar que la tarea existe
+        cursor.execute("SELECT COUNT(*) FROM tareas WHERE id = ?", (id_tarea,))
+        if cursor.fetchone()[0] == 0:
+            return False
+        
+        # Actualizar el estado
+        cursor.execute(
+            "UPDATE tareas SET estado = ?, fecha_actualizacion = CURRENT_TIMESTAMP WHERE id = ?",
+            (nuevo_estado, id_tarea)
+        )
+        conexion.commit()
+        return cursor.rowcount > 0
+    except sqlite3.Error as e:
+        print(f"{MENSAJES['error_bd']}{e}")
+        return False
+    finally:
+        cerrar_conexion(conexion)
 
 def eliminar_tarea(id_tarea):
     """
@@ -124,14 +184,21 @@ def eliminar_tarea(id_tarea):
     
     Returns:
         bool: True si se eliminó correctamente, False en caso contrario
-        
-    Ejemplo:
-        if eliminar_tarea(5):
-            print("Tarea eliminada")
     """
-    # TODO: Implementar DELETE para eliminar la tarea por ID
-    # Verificar que la tarea existe antes de eliminar
-    pass
+    conexion = conectar_bd()
+    if not conexion:
+        return False
+    
+    try:
+        cursor = conexion.cursor()
+        cursor.execute("DELETE FROM tareas WHERE id = ?", (id_tarea,))
+        conexion.commit()
+        return cursor.rowcount > 0
+    except sqlite3.Error as e:
+        print(f"{MENSAJES['error_bd']}{e}")
+        return False
+    finally:
+        cerrar_conexion(conexion)
 
 def buscar_tareas(termino):
     """
@@ -141,16 +208,27 @@ def buscar_tareas(termino):
         termino (str): Término de búsqueda
     
     Returns:
-        list: Lista de tuplas con las tareas que coinciden con la búsqueda
-              o lista vacía si no se encontraron coincidencias
-              
-    Ejemplo:
-        resultados = buscar_tareas("python")
+        list: Lista de tuplas con las tareas que coinciden
     """
-    # TODO: Implementar búsqueda usando LIKE en título y descripción
-    # La búsqueda debe ser insensible a mayúsculas/minúsculas
-    # Usar el operador OR para buscar en ambos campos
-    pass
+    conexion = conectar_bd()
+    if not conexion:
+        return []
+    
+    try:
+        cursor = conexion.cursor()
+        termino_busqueda = f"%{termino}%"
+        cursor.execute(
+            "SELECT id, titulo, descripcion, estado, fecha_creacion, fecha_actualizacion "
+            "FROM tareas WHERE LOWER(titulo) LIKE LOWER(?) OR LOWER(descripcion) LIKE LOWER(?) "
+            "ORDER BY fecha_creacion DESC",
+            (termino_busqueda, termino_busqueda)
+        )
+        return cursor.fetchall()
+    except sqlite3.Error as e:
+        print(f"{MENSAJES['error_bd']}{e}")
+        return []
+    finally:
+        cerrar_conexion(conexion)
 
 def cerrar_conexion(conexion):
     """
@@ -158,12 +236,9 @@ def cerrar_conexion(conexion):
     
     Args:
         conexion (sqlite3.Connection): Conexión a cerrar
-        
-    Ejemplo:
-        conexion = conectar_bd()
-        # ... usar conexión ...
-        cerrar_conexion(conexion)
     """
-    # TODO: Implementar cierre seguro de conexión
-    # Verificar que la conexión existe antes de cerrarla
-    pass
+    if conexion:
+        try:
+            conexion.close()
+        except sqlite3.Error:
+            pass

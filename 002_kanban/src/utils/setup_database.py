@@ -4,13 +4,14 @@
 #  Se ejecuta una vez para configurar el proyecto.
 # =============================================================================
 
+
 import sqlite3
+import os
 from config import DATABASE_PATH, ESTADOS_VALIDOS
 
 def crear_base_datos():
     """
     Crea la base de datos y la tabla de tareas si no existen.
-    Este script se ejecuta una vez para configurar el proyecto.
     """
     try:
         # Conectar a la base de datos (se crea si no existe)

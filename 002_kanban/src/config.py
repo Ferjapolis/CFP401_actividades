@@ -14,8 +14,8 @@ DATABASE_PATH = os.path.join(os.getcwd(), DATABASE_NAME)
 ESTADOS_VALIDOS = ["Por Hacer", "En Progreso", "Completado"]
 
 # Configuraciones de la interfaz
-SEPARADOR = "=" * 50
-SEPARADOR_COLUMNA = "-" * 15
+SEPARADOR = "=" * 60
+SEPARADOR_COLUMNA = "-" * 18
 
 # Mensajes del sistema
 MENSAJES = {
@@ -25,5 +25,8 @@ MENSAJES = {
     'tarea_creada': '✅ Tarea creada exitosamente!',
     'tarea_eliminada': '🗑️ Tarea eliminada exitosamente!',
     'tarea_movida': '📦 Tarea movida exitosamente!',
-    'error_bd': '❌ Error en la base de datos: '
+    'error_bd': '❌ Error en la base de datos: ',
+    'no_tareas': '📭 No hay tareas para mostrar.',
+    'tarea_no_encontrada': '❌ Tarea no encontrada.',
+    'sin_resultados': '🔍 No se encontraron tareas con ese término.'
 }
